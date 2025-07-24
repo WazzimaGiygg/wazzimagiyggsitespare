@@ -1,32 +1,18 @@
 [
     {
-        "label": "Procurar Artigos",
+        "label": "Página inicial",
         "href": "recepcao.html",
         "requiresAuth": false
     },
     {
-        "label": "Espaço Cliente",
-        "href": "./cw22.html",
+        "label": "Sobre WazzimaGiygg",
+        "href": "./sobrewazzimagiygg",
         "requiresAuth": false
     },
+
     {
-        "label": "Chat (Contato)",
-        "href": "contato.html",
-        "requiresAuth": false
-    },
-    {
-        "label": "Ferramentas Úteis",
-        "href": "ferramentasuteis.html",
-        "requiresAuth": false
-    },
-    {
-        "label": "Mudanças Recentes",
-        "href": "./wikinotpedia/",
-        "requiresAuth": false
-    },
-    {
-        "label": "Renovação dos Serviços WZZM",
-        "href": "./renovacao/",
+        "label": "Meus trabalhos e produtos",
+        "href": "./meustrabalhos",
         "requiresAuth": false
     }
 ]
