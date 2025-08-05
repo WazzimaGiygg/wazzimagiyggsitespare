@@ -2,17 +2,23 @@
     {
         "label": "Página inicial",
         "href": "recepcao.html",
-        "requiresAuth": false
+        "requiresAuth": true
     },
     {
         "label": "Sobre WazzimaGiygg",
         "href": "./sobrewazzimagiygg",
-        "requiresAuth": false
+        "requiresAuth": true
+    },
+
+    {
+        "label": "Login Serviços WazzimaGiygg",
+        "href": "login/",
+        "requiresAuth": true
     },
 
     {
         "label": "Meus trabalhos e produtos",
         "href": "./meustrabalhos",
-        "requiresAuth": false
+        "requiresAuth": true
     }
 ]
