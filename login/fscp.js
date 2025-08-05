@@ -2,73 +2,64 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js"></script>
 
 
-// Configuração do Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyB9GkSqTIZ0kbVsba_WOdQeVAETrF9qna0",
-  authDomain: "wzzm-ce3fc.firebaseapp.com",
-  projectId: "wzzm-ce3fc",
-  storageBucket: "wzzm-ce3fc.appspot.com",
-  messagingSenderId: "249427877153",
-  appId: "1:249427877153:web:0e4297294794a5aadeb260",
-  measurementId: "G-PLKNZNFCQ8"
+  apiKey: "AIzaSyA6lP7RpS41ASYfl5w0qEqdt1-rIzDRK7A",
+  authDomain: "wazzimagiyggwork.firebaseapp.com",
+  projectId: "wazzimagiyggwork",
+  storageBucket: "wazzimagiyggwork.firebasestorage.app",
+  messagingSenderId: "583826772348",
+  appId: "1:583826772348:web:6463bb7f1e6acaf4dd94f9",
+  measurementId: "G-KTE45H31LZ"
 };
 
-// Inicializa o Firebase
+// Inicialize o Firebase e seus serviços
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Função para injetar o código na página
-function injectCode(html, css, js) {
-  // Injeta o HTML
-  if (html) {
-    document.body.innerHTML = html;
-  }
+// Crie o provedor de autenticação do Google
+const provider = new GoogleAuthProvider();
 
-  // Injeta o CSS
-  if (css) {
-    const style = document.createElement('style');
-    style.textContent = css;
-    document.head.appendChild(style);
-  }
-
-  // Injeta o JavaScript
-  if (js) {
-    const script = document.createElement('script');
-    script.textContent = js;
-    document.body.appendChild(script);
-  }
-}
-
-// Função principal para buscar e carregar os dados
-async function loadContentFromFirebase() {
+// Funções de login e cadastro
+async function loginComGoogle() {
   try {
-    // Obtém o nome do host da página atual (ex: 'wazzimagiygg.com')
-    const host = window.location.hostname;
-    
-    // Referencia o documento com o nome do host na coleção "HTML2W"
-    const docRef = doc(db, "HTML2W", host);
-    const docSnap = await getDoc(docRef);
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
 
-    if (docSnap.exists()) {
-      console.log("Dados do documento encontrados!");
-      const data = docSnap.data();
+    // Acessa o token de credencial do Google. Pode ser usado para acessar APIs do Google.
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const token = credential.accessToken;
 
-      // Desestrutura os dados do documento
-      const { HTML, CSS, JS } = data;
-      
-      // Injeta o código na página
-      injectCode(HTML, CSS, JS);
-      
-    } else {
-      console.log("Nenhum documento encontrado para este host:", host);
-      // Aqui você pode adicionar um fallback, como uma página de erro 404
-      // ou um conteúdo padrão.
-    }
-  } catch (e) {
-    console.error("Erro ao carregar dados do Firebase:", e);
-    // Lidar com possíveis erros, como falha de conexão.
+    // Se o login for bem-sucedido, salva os dados do usuário no Firestore.
+    // O ID do documento será o UID do usuário do Firebase.
+    const userRef = doc(db, "usuario", user.uid);
+    await setDoc(userRef, {
+      uid: user.uid,
+      nome: user.displayName,
+      email: user.email,
+      fotoUrl: user.photoURL,
+      // Você pode adicionar mais campos aqui, como a data de cadastro, por exemplo.
+      dataCadastro: new Date()
+    }, { merge: true }); // O merge: true é útil para não sobrescrever dados existentes.
+
+    console.log("Usuário logado e dados salvos com sucesso!", user);
+
+  } catch (error) {
+    // Lidar com erros de login.
+    const errorCode = error.code;
+    const errorMessage = error.message;
+
+    // O email da conta do usuário que foi usada.
+    const email = error.customData.email;
+
+    // O tipo de credencial do Auth que foi usado.
+    const credential = GoogleAuthProvider.credentialFromError(error);
+
+    console.error("Erro durante o login com o Google:", errorMessage);
   }
 }
 
-// Chama a função principal para iniciar o processo
-loadContentFromFirebase();
+// Para usar a função, você pode chamá-la de um botão, por exemplo:
+// <button onclick="loginComGoogle()">Login com Google</button>
+// Certifique-se de que a função esteja acessível no escopo global ou em um módulo.
+
