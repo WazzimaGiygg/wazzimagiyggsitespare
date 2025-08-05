@@ -11,12 +11,6 @@
     },
 
     {
-        "label": "Login Serviços WazzimaGiygg",
-        "href": "login/",
-        "requiresAuth": true
-    },
-
-    {
         "label": "Meus trabalhos e produtos",
         "href": "./meustrabalhos",
         "requiresAuth": true
