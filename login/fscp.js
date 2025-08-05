@@ -1,7 +1,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js"></script>
 
-<script>
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -73,5 +72,3 @@ async function loadContentFromFirebase() {
 
 // Chama a função principal para iniciar o processo
 loadContentFromFirebase();
-  
-</script>
