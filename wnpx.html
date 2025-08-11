@@ -628,9 +628,9 @@
                     <p><strong>UID do Documento:</strong> ${docId}</p>
                     <p><strong>Autor:</strong> ${item.author_uid || 'N/A'}</p>
                 </div>
-                <div class="article-content">
-                    <p>${item.content || 'Sem descrição.'}</p>
-                </div>
+<div class="article-content">
+    ${item.content || '<p>Sem descrição.</p>'}
+</div>
                 <div class="article-actions">
                     <button id="edit-article-button">Editar</button>
                     <button id="view-history-button">Histórico</button>
