@@ -574,15 +574,12 @@
         });
 
         // --- Lógica do Painel (existente) ---
-        function carregarArtigos(filtroCategoria = 'todos', filtroIdioma = 'pt-br') {
+        function carregarArtigos(filtroCategoria = 'todos') {
             articleList.innerHTML = '<p>Carregando artigos...</p>';
-            let query = db.collection('materias').orderBy('data', 'desc');
+            let query = db.collection('wazzimagiyggfemboyverse69').orderBy('date', 'desc');
 
             if (filtroCategoria !== 'todos') {
                 query = query.where('sector', '==', filtroCategoria);
-            }
-            if (filtroIdioma !== 'todos') {
-                query = query.where('idioma', '==', filtroIdioma);
             }
 
             query.get().then(snapshot => {
@@ -595,7 +592,7 @@
                     const item = doc.data();
                     const listItem = document.createElement('div');
                     listItem.className = 'article-list-item';
-                    listItem.innerHTML = `<h4>${item.titulo}</h4><p>${item.descricao ? item.descricao.substring(0, 100) + '...' : ''}</p>`;
+                    listItem.innerHTML = `<h4>${item.title}</h4><p>${item.content ? item.content.substring(0, 100) + '...' : ''}</p>`;
                     listItem.addEventListener('click', () => {
                         carregarDetalhesArtigo(doc.id, item);
                     });
@@ -606,6 +603,16 @@
                 articleList.innerHTML = '<p>Erro ao carregar artigos.</p>';
             });
         }
+        
+        // Adiciona eventos de clique para os filtros da barra lateral
+        document.querySelectorAll('.nav-link-filter').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Assumindo que você não quer filtrar por idioma por enquanto, apenas por categoria
+                const filtro = e.target.dataset.filter;
+                carregarArtigos(filtro);
+            });
+        });
 
         function carregarDetalhesArtigo(docId, item) {
             selectedArticleDocId = docId;
@@ -615,16 +622,14 @@
             if (clickedItem) clickedItem.classList.add('selected');
 
             articleDetails.innerHTML = `
-                <h2>${item.titulo}</h2>
+                <h2>${item.title}</h2>
                 <div class="info">
                     <p><strong>Setor:</strong> ${item.sector}</p>
                     <p><strong>UID do Documento:</strong> ${docId}</p>
-                    <p><strong>Arquivo:</strong> ${item.arquivo || 'N/A'}</p>
-                    <p><strong>Gabinete:</strong> ${item.gabinete || 'N/A'}</p>
-                    <p><strong>Autor:</strong> ${item.editor_uid || 'N/A'}</p>
+                    <p><strong>Autor:</strong> ${item.author_uid || 'N/A'}</p>
                 </div>
                 <div class="article-content">
-                    <p>${item.descricao || 'Sem descrição.'}</p>
+                    <p>${item.content || 'Sem descrição.'}</p>
                 </div>
                 <div class="article-actions">
                     <button id="edit-article-button">Editar</button>
@@ -642,9 +647,9 @@
         // --- Lógica de Edição de Artigo (existente) ---
         function abrirFormularioEdicao() {
             navigateTo('section-edit-article');
-            document.getElementById('edicao-titulo').value = selectedArticleData.titulo;
+            document.getElementById('edicao-titulo').value = selectedArticleData.title;
             document.getElementById('edicao-setor').value = selectedArticleData.sector;
-            document.getElementById('edicao-conteudo').value = selectedArticleData.descricao;
+            document.getElementById('edicao-conteudo').value = selectedArticleData.content;
         }
 
         formEdicaoArtigo.addEventListener('submit', async (e) => {
@@ -655,10 +660,10 @@
             
             if (selectedArticleDocId) {
                 try {
-                    await db.collection('materias').doc(selectedArticleDocId).update({
-                        titulo: novoTitulo,
+                    await db.collection('wazzimagiyggfemboyverse69').doc(selectedArticleDocId).update({
+                        title: novoTitulo,
                         sector: novoSetor,
-                        descricao: novoConteudo,
+                        content: novoConteudo,
                         ultimaEdicao: firebase.firestore.FieldValue.serverTimestamp(),
                         editor_uid: auth.currentUser.uid,
                     });
