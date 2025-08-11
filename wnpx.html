@@ -614,34 +614,54 @@
             });
         });
 
-        function carregarDetalhesArtigo(docId, item) {
+       function carregarDetalhesArtigo(docId, item) {
             selectedArticleDocId = docId;
             selectedArticleData = item;
             document.querySelectorAll('.article-list-item').forEach(el => el.classList.remove('selected'));
             const clickedItem = document.querySelector(`[data-doc-id="${docId}"]`);
             if (clickedItem) clickedItem.classList.add('selected');
 
-            articleDetails.innerHTML = `
-                <h2>${item.title}</h2>
-                <div class="info">
-                    <p><strong>Setor:</strong> ${item.sector}</p>
-                    <p><strong>UID do Documento:</strong> ${docId}</p>
-                    <p><strong>Autor:</strong> ${item.author_uid || 'N/A'}</p>
-                </div>
-<div class="article-content">
-    ${item.content || '<p>Sem descrição.</p>'}
-</div>
-                <div class="article-actions">
-                    <button id="edit-article-button">Editar</button>
-                    <button id="view-history-button">Histórico</button>
-                </div>
-            `;
-            document.getElementById('edit-article-button').addEventListener('click', () => {
-                abrirFormularioEdicao();
-            });
-            document.getElementById('view-history-button').addEventListener('click', () => {
-                abrirHistoricoArtigo();
-            });
+            // Preparar o conteúdo da imagem
+            let imageHtml = '';
+            if (item.image_reference && item.image_reference.includes('[IMAGEM_ID:')) {
+                const imageDocId = item.image_reference.split(':')[1].slice(0, -1);
+                db.collection('imagenscode').doc(imageDocId).get().then(imageDoc => {
+                    if (imageDoc.exists) {
+                        const imageData = imageDoc.data();
+                        imageHtml = `<img src="data:image/png;base64,${imageData.base64_code}" style="max-width:100%; height:auto;">`;
+                        renderDetails(); // Renderiza após obter a imagem
+                    } else {
+                        renderDetails(); // Renderiza sem a imagem se não for encontrada
+                    }
+                });
+            } else {
+                renderDetails(); // Renderiza sem a imagem se não houver referência
+            }
+
+            function renderDetails() {
+                articleDetails.innerHTML = `
+                    <h2>${item.title}</h2>
+                    <div class="info">
+                        <p><strong>Setor:</strong> ${item.sector}</p>
+                        <p><strong>UID do Documento:</strong> ${docId}</p>
+                        <p><strong>Autor:</strong> ${item.author_uid || 'N/A'}</p>
+                    </div>
+                    ${imageHtml}
+                    <div class="article-content">
+                        ${item.content || '<p>Sem descrição.</p>'}
+                    </div>
+                    <div class="article-actions">
+                        <button id="edit-article-button">Editar</button>
+                        <button id="view-history-button">Histórico</button>
+                    </div>
+                `;
+                document.getElementById('edit-article-button').addEventListener('click', () => {
+                    abrirFormularioEdicao();
+                });
+                document.getElementById('view-history-button').addEventListener('click', () => {
+                    abrirHistoricoArtigo();
+                });
+            }
         }
 
         // --- Lógica de Edição de Artigo (existente) ---
