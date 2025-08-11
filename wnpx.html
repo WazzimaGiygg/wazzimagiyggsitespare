@@ -592,6 +592,7 @@
                     const item = doc.data();
                     const listItem = document.createElement('div');
                     listItem.className = 'article-list-item';
+                    listItem.setAttribute('data-doc-id', doc.id); // Adicionado: Atributo para identificar o documento
                     listItem.innerHTML = `<h4>${item.title}</h4><p>${item.content ? item.content.substring(0, 100) + '...' : ''}</p>`;
                     listItem.addEventListener('click', () => {
                         carregarDetalhesArtigo(doc.id, item);
