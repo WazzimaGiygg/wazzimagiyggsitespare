@@ -1,289 +1,722 @@
-// --- Configuração do Firebase ---
-const firebaseConfig = {
-    apiKey: "AIzaSyB9GkSqTIZ0kbVsba_WOdQeVAETrF9qna0",
-    authDomain: "wzzm-ce3fc.firebaseapp.com",
-    projectId: "wzzm-ce3fc",
-    storageBucket: "wzzm-ce3fc.appspot.com",
-    messagingSenderId: "249427877153",
-    appId: "1:249427877153:web:0e4297294794a5aadeb260",
-    measurementId: "G-PLKNZNFCQ8"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-const storage = firebase.storage();
-
-// --- Elementos do DOM ---
-const authStatus = document.getElementById('auth-status');
-const mainDashboard = document.getElementById('main-dashboard');
-const loginButton = document.getElementById('login-button');
-const logoutButton = document.getElementById('logout-button');
-const articleList = document.getElementById('article-list');
-const articleDetails = document.getElementById('article-details');
-const editFormContainer = document.getElementById('edit-form-container');
-const formEdicaoArtigo = document.getElementById('form-edicao-artigo');
-const profileSection = document.getElementById('profile-section');
-const profileLink = document.getElementById('profile-link');
-const userDisplay = document.getElementById('user-display');
-const loading = document.getElementById('loading');
-const resultDiv = document.getElementById('result');
-const contentSubmitForm = document.getElementById('content-submit-form');
-const contentTextarea = document.getElementById('content-textarea');
-
-// --- Estado da Aplicação ---
-let selectedArticleDocId = null;
-let selectedArticleData = null;
-
-// --- Monitora o estado da autenticação ---
-auth.onAuthStateChanged(user => {
-    if (user) {
-        authStatus.style.display = 'none';
-        mainDashboard.style.display = 'flex';
-        carregarArtigos();
-    } else {
-        authStatus.style.display = 'block';
-        mainDashboard.style.display = 'none';
-    }
-});
-
-// --- Funções de Navegação e Carregamento de Dados ---
-const sections = document.querySelectorAll('.content-section');
-function navigateTo(sectionId) {
-    sections.forEach(section => {
-        section.style.display = 'none';
-    });
-    document.getElementById(sectionId).style.display = 'block';
-}
-
-document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Limpa a seleção do filtro ao mudar de seção
-        document.querySelectorAll('.nav-link-filter').forEach(l => l.classList.remove('active'));
-        navigateTo(`section-${e.target.dataset.section}`);
-    });
-});
-
-// --- Funções de Submissão de Conteúdo (Novo Artigo) ---
-const getBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = error => reject(error);
-    });
-}
-
-contentSubmitForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    loading.style.display = 'block';
-    resultDiv.innerHTML = '';
-
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Você precisa estar logado para publicar.");
-        loading.style.display = 'none';
-        return;
-    }
-
-    const title = document.getElementById('title').value;
-    const sector = document.getElementById('sector').value;
-    const content = contentTextarea.value;
-    const termsConsent = document.getElementById('terms-consent').checked;
-    const imageFile = document.getElementById('image-upload').files[0];
-
-    try {
-        let imageUrlCode = null;
-        let imageDocId = null;
-
-        if (imageFile) {
-            const imageBase64 = await getBase64(imageFile);
-            const imageRef = await db.collection('imagenscode').add({
-                base64_code: imageBase64,
-                original_name: imageFile.name,
-                upload_date: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            imageDocId = imageRef.id;
-            imageUrlCode = `[IMAGEM_ID:${imageDocId}]`;
-            resultDiv.innerHTML += `<p>Imagem salva com sucesso! ID: <strong>${imageDocId}</strong></p>`;
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem vindo à pagina de WazzimaGiygg</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #336699;
+            --secondary-color: #f1f1f1;
+            --background-color: #e9e9e9;
+            --border-color: #ccc;
+            --text-color: #333;
+            --link-color: #007bff;
+            --link-hover-color: #0056b3;
+            --wikipedia-blue: #0645ad;
         }
 
-        await db.collection('wazzimagiyggfemboyverse69').add({
-            title: title,
-            sector: sector,
-            date: firebase.firestore.FieldValue.serverTimestamp(),
-            content: content,
-            author_uid: user.uid,
-            agreed_terms: termsConsent,
-            image_reference: imageUrlCode
-        });
-
-        resultDiv.innerHTML += `<p>Documento publicado com sucesso na coleção "wazzimagiyggfemboyverse69".</p>`;
-        contentSubmitForm.reset();
-    } catch (error) {
-        console.error("Erro ao publicar: ", error);
-        resultDiv.innerHTML = `<p style="color:red;">Ocorreu um erro ao publicar o conteúdo. Tente novamente.</p>`;
-    } finally {
-        loading.style.display = 'none';
-    }
-});
-
-// --- Funções de Login e Logout (existentes, com pequenas modificações) ---
-loginButton.addEventListener('click', () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(error => {
-        console.error("Erro no login:", error);
-        alert("Ocorreu um erro ao fazer login. Tente novamente.");
-    });
-});
-
-logoutButton.addEventListener('click', () => {
-    auth.signOut();
-    navigateTo('section-all-articles');
-});
-
-// --- Lógica do Painel (Corrigida) ---
-function carregarArtigos(filtroCategoria = 'todos') {
-    articleList.innerHTML = '<p>Carregando artigos...</p>';
-    let query = db.collection('wazzimagiyggfemboyverse69').orderBy('date', 'desc');
-
-    if (filtroCategoria !== 'todos') {
-        query = query.where('sector', '==', filtroCategoria);
-    }
-
-    query.get().then(snapshot => {
-        articleList.innerHTML = '';
-        if (snapshot.empty) {
-            articleList.innerHTML = '<p>Nenhum artigo encontrado.</p>';
-            return;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
         }
-        snapshot.forEach(doc => {
-            const item = doc.data();
-            const listItem = document.createElement('div');
-            listItem.className = 'article-list-item';
-            listItem.setAttribute('data-doc-id', doc.id);
-            listItem.innerHTML = `<h4>${item.title}</h4><p>${item.content ? item.content.substring(0, 100) + '...' : ''}</p>`;
-            listItem.addEventListener('click', () => {
-                carregarDetalhesArtigo(doc.id, item, listItem);
-            });
-            articleList.appendChild(listItem);
-        });
-    }).catch(error => {
-        console.error("Erro ao carregar artigos:", error);
-        articleList.innerHTML = '<p>Erro ao carregar artigos.</p>';
-    });
-}
 
-// Adiciona eventos de clique para os filtros da barra lateral (Corrigido)
-document.querySelectorAll('.nav-link-filter').forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        document.querySelectorAll('.nav-link-filter').forEach(l => l.classList.remove('active'));
-        e.target.classList.add('active');
-        const filtro = e.target.dataset.filter;
-        carregarArtigos(filtro);
-    });
-});
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
 
-function carregarDetalhesArtigo(docId, item, listItem) {
-    selectedArticleDocId = docId;
-    selectedArticleData = item;
-    document.querySelectorAll('.article-list-item').forEach(el => el.classList.remove('selected'));
-    if (listItem) listItem.classList.add('selected');
+        header {
+            background-color: white;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
 
-    // Preparar o conteúdo da imagem
-    let imageHtml = '';
-    if (item.image_reference && item.image_reference.includes('[IMAGEM_ID:')) {
-        const imageDocId = item.image_reference.split(':')[1].slice(0, -1);
-        db.collection('imagenscode').doc(imageDocId).get().then(imageDoc => {
-            if (imageDoc.exists) {
-                const imageData = imageDoc.data();
-                imageHtml = `<img src="data:image/png;base64,${imageData.base64_code}" style="max-width:100%; height:auto;">`;
-                renderDetails();
+        header .logo {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: var(--wikipedia-blue);
+        }
+
+        header .user-menu a {
+            margin-left: 1rem;
+            text-decoration: none;
+            color: var(--wikipedia-blue);
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            padding-top: 5rem;
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-section h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-section li a {
+            display: block;
+            padding: 0.5rem 0;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: color 0.2s;
+        }
+
+        .sidebar-section li a:hover, .sidebar-section li a.active {
+            color: var(--wikipedia-blue);
+            font-weight: bold;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 5rem 1rem 1rem 260px;
+        }
+
+        .content-area {
+            display: flex;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            min-height: 80vh;
+        }
+
+        .article-list {
+            width: 40%;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .article-list-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .article-list-item:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .article-list-item.selected {
+            background-color: var(--secondary-color);
+            border-left: 3px solid var(--wikipedia-blue);
+        }
+
+        .article-list-item h4 {
+            margin: 0 0 0.5rem;
+        }
+
+        .article-details {
+            width: 60%;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .article-details .info p {
+            margin: 0 0 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .article-content {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .edit-form-container {
+            padding: 1rem;
+        }
+
+        .edit-form-container h2 {
+            margin-top: 0;
+        }
+
+        .edit-form-container label {
+            display: block;
+            margin-top: 1rem;
+        }
+
+        .edit-form-container input, .edit-form-container textarea, .edit-form-container select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .edit-form-container button {
+            margin-top: 1rem;
+            padding: 10px 15px;
+            background-color: var(--wikipedia-blue);
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #auth-status {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        #profile-content {
+            padding: 1rem;
+        }
+
+        #profile-content h2 {
+            margin-top: 0;
+        }
+
+        #profile-content .profile-tabs {
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+        }
+
+        #profile-content .profile-tabs a {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            color: var(--text-color);
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+
+        #profile-content .profile-tabs a.active {
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            background-color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        #profile-content .tab-content {
+            display: none;
+        }
+
+        #profile-content .tab-content.active {
+            display: block;
+        }
+        
+        #content-form {
+            max-width: 800px;
+            margin: auto;
+            padding: 2em;
+            background-color: white;
+            border: 1px solid var(--border-color);
+        }
+        
+        #content-form label {
+            display: block;
+            margin-top: 1em;
+            font-weight: bold;
+        }
+        
+        #content-form input[type="text"], #content-form select, #content-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        
+        #content-form #content-textarea {
+            height: 300px;
+        }
+        
+        #content-form #consent {
+            margin-top: 1em;
+        }
+        
+        #content-form button {
+            padding: 10px 15px;
+            margin-top: 1em;
+            cursor: pointer;
+            background-color: var(--wikipedia-blue);
+            color: white;
+            border: none;
+        }
+        
+        #loading {
+            display: none;
+            margin-top: 1em;
+            color: blue;
+            text-align: center;
+        }
+        
+        #result {
+            margin-top: 1em;
+            padding: 10px;
+            background-color: #e9e9e9;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div id="auth-status">
+        <p>Faça login com sua conta Google para continuar.</p>
+        <button id="login-button">Login com Google</button>
+    </div>
+
+    <div id="main-dashboard" style="display: none;">
+        <header>
+            <div class="logo">WazzimaGiygg - Femboy Universe</div>
+            <div class="user-menu">
+                <a href="#" id="profile-link">Meu Perfil</a>
+                <a href="#" id="logout-button">Sair</a>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Navegação</h3>
+                    <ul>
+                        <li><a href="#" class="nav-link" data-section="all-articles">Ver Todos</a></li>
+                        <li><a href="#" class="nav-link" data-section="new-article">Novo Artigo</a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <h3>Categorias</h3>
+                    <ul id="category-filter">
+                        <li><a href="#" class="nav-link-filter" data-filter="Noticias">Noticias</a></li>
+                        <li><a href="#" class="nav-link-filter" data-filter="Produtos">Produtos</a></li>
+                        <li><a href="#" class="nav-link-filter" data-filter="Informações">Informações</a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <h3>Idioma</h3>
+                    <ul id="language-filter">
+                        <li><a href="#" class="nav-link-filter" data-filter="pt-br">Português</a></li>
+                        <li><a href="#" class="nav-link-filter" data-filter="en">Inglês</a></li>
+                        <li><a href="#" class="nav-link-filter" data-filter="es">Espanhol</a></li>
+                        <li><a href="#" class="nav-link-filter" data-filter="de">Alemão</a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <section id="section-all-articles" class="content-section">
+                    <div class="content-area">
+                        <div class="article-list" id="article-list">
+                            </div>
+                        <div class="article-details" id="article-details">
+                            <p>Selecione um artigo para ver os detalhes.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="section-new-article" class="content-section" style="display: none;">
+                    <div id="content-form">
+                        <h1>Inserir Novo Conteúdo</h1>
+                        <p>Logado como: <strong id="user-display"></strong></p>
+                        <hr>
+                        <form id="content-submit-form">
+                            <label for="title">Título:</label>
+                            <input type="text" id="title" required>
+
+                            <label for="sector">Setor:</label>
+                            <select id="sector" required>
+                                <option value="">Selecione um setor</option>
+                                <option value="Noticias">Noticias</option>
+                                <option value="Produtos">Produtos</option>
+                                <option value="Informações">Informações</option>
+                            </select>
+
+                            <label for="content-textarea">Conteúdo (insira o código HTML aqui):</label>
+                            <textarea id="content-textarea" required></textarea>
+
+                            <label for="image-upload">Upload de Imagem:</label>
+                            <input type="file" id="image-upload" accept="image/*">
+
+                            <div id="consent">
+                                <input type="checkbox" id="terms-consent" required>
+                                <label for="terms-consent">Concordo com os termos de publicação.</label>
+                            </div>
+
+                            <button type="submit">Publicar Conteúdo</button>
+                        </form>
+                        <p id="loading">Processando...</p>
+                        <div id="result"></div>
+                    </div>
+                </section>
+
+                <section id="section-edit-article" class="content-section" style="display: none;">
+                    <div class="edit-form-container" id="edit-form-container">
+                        <h2>Editar Artigo</h2>
+                        <form id="form-edicao-artigo">
+                            <label for="edicao-titulo">Título:</label>
+                            <input type="text" id="edicao-titulo" required>
+
+                            <label for="edicao-setor">Setor:</label>
+                            <select id="edicao-setor" required>
+                                <option value="Noticias">Noticias</option>
+                                <option value="Produtos">Produtos</option>
+                                <option value="Informações">Informações</option>
+                            </select>
+
+                            <label for="edicao-conteudo">Conteúdo:</label>
+                            <textarea id="edicao-conteudo" rows="20" required></textarea>
+
+                            <button type="submit">Salvar Edição</button>
+                            <button type="button" id="cancelar-edicao">Cancelar</button>
+                        </form>
+                    </div>
+                </section>
+                
+                <section id="section-article-history" class="content-section" style="display: none;">
+                    <h2>Histórico do Artigo</h2>
+                    <div id="history-list"></div>
+                    <button id="cancelar-historico">Voltar</button>
+                </section>
+
+                <section id="profile-section" class="content-section" style="display: none;">
+                    <div id="profile-content">
+                        <h2>Meu Perfil</h2>
+                        <div class="profile-tabs">
+                            <a href="#" class="tab-link active" data-tab="contributions">Minhas Contribuições</a>
+                            <a href="#" class="tab-link" data-tab="personal-page">Página Pessoal</a>
+                            <a href="#" class="tab-link" data-tab="discussion">Discussão</a>
+                        </div>
+                        <div id="tab-contributions" class="tab-content active">
+                            <h3>Minhas Contribuições Recentes</h3>
+                            <ul id="contributions-list"></ul>
+                        </div>
+                        <div id="tab-personal-page" class="tab-content">
+                            <h3>Minha Página Pessoal</h3>
+                            <textarea id="personal-page-content" rows="10"></textarea>
+                            <button id="save-personal-page">Salvar Página Pessoal</button>
+                        </div>
+                        <div id="tab-discussion" class="tab-content">
+                            <h3>Discussões</h3>
+                            <p>Em breve...</p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script>
+        // --- Configuração do Firebase ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyB9GkSqTIZ0kbVsba_WOdQeVAETrF9qna0",
+            authDomain: "wzzm-ce3fc.firebaseapp.com",
+            projectId: "wzzm-ce3fc",
+            storageBucket: "wzzm-ce3fc.appspot.com",
+            messagingSenderId: "249427877153",
+            appId: "1:249427877153:web:0e4297294794a5aadeb260",
+            measurementId: "G-PLKNZNFCQ8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const storage = firebase.storage();
+
+        // --- Elementos do DOM ---
+        const authStatus = document.getElementById('auth-status');
+        const mainDashboard = document.getElementById('main-dashboard');
+        const loginButton = document.getElementById('login-button');
+        const logoutButton = document.getElementById('logout-button');
+        const articleList = document.getElementById('article-list');
+        const articleDetails = document.getElementById('article-details');
+        const editFormContainer = document.getElementById('edit-form-container');
+        const formEdicaoArtigo = document.getElementById('form-edicao-artigo');
+        const profileSection = document.getElementById('profile-section');
+        const profileLink = document.getElementById('profile-link');
+
+        // --- Estado da Aplicação ---
+        let selectedArticleDocId = null;
+        let selectedArticleData = null;
+
+        // --- Monitora o estado da autenticação ---
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                authStatus.style.display = 'none';
+                mainDashboard.style.display = 'flex';
+                carregarArtigos();
             } else {
-                renderDetails();
+                authStatus.style.display = 'block';
+                mainDashboard.style.display = 'none';
             }
         });
-    } else {
-        renderDetails();
-    }
 
-    function renderDetails() {
-        articleDetails.innerHTML = `
-            <h2>${item.title}</h2>
-            <div class="info">
-                <p><strong>Setor:</strong> ${item.sector}</p>
-                <p><strong>UID do Documento:</strong> ${docId}</p>
-                <p><strong>Autor:</strong> ${item.author_uid || 'N/A'}</p>
-            </div>
-            ${imageHtml}
-            <div class="article-content">
-                ${item.content || '<p>Sem descrição.</p>'}
-            </div>
-            <div class="article-actions">
-                <button id="edit-article-button">Editar</button>
-                <button id="view-history-button">Histórico</button>
-            </div>
-        `;
-        document.getElementById('edit-article-button').addEventListener('click', () => {
-            abrirFormularioEdicao();
-        });
-        document.getElementById('view-history-button').addEventListener('click', () => {
-            abrirHistoricoArtigo();
-        });
-    }
-}
-
-// --- Lógica de Edição de Artigo (existente) ---
-function abrirFormularioEdicao() {
-    navigateTo('section-edit-article');
-    document.getElementById('edicao-titulo').value = selectedArticleData.title;
-    document.getElementById('edicao-setor').value = selectedArticleData.sector;
-    document.getElementById('edicao-conteudo').value = selectedArticleData.content;
-}
-
-formEdicaoArtigo.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const novoTitulo = document.getElementById('edicao-titulo').value;
-    const novoSetor = document.getElementById('edicao-setor').value;
-    const novoConteudo = document.getElementById('edicao-conteudo').value;
-
-    if (selectedArticleDocId) {
-        try {
-            await db.collection('wazzimagiyggfemboyverse69').doc(selectedArticleDocId).update({
-                title: novoTitulo,
-                sector: novoSetor,
-                content: novoConteudo,
-                ultimaEdicao: firebase.firestore.FieldValue.serverTimestamp(),
-                editor_uid: auth.currentUser.uid,
+        // --- Funções de Navegação e Carregamento de Dados ---
+        const sections = document.querySelectorAll('.content-section');
+        function navigateTo(sectionId) {
+            sections.forEach(section => {
+                section.style.display = 'none';
             });
-            alert("Artigo atualizado com sucesso!");
-            navigateTo('section-all-articles');
-            carregarArtigos();
-        } catch (error) {
-            console.error("Erro ao atualizar o artigo:", error);
-            alert("Ocorreu um erro ao atualizar o artigo.");
+            document.getElementById(sectionId).style.display = 'block';
         }
-    }
-});
+        
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo(`section-${e.target.dataset.section}`);
+            });
+        });
+        
+        // --- Funções de Submissão de Conteúdo (Novo Artigo) ---
+        const userDisplay = document.getElementById('user-display');
+        const loading = document.getElementById('loading');
+        const resultDiv = document.getElementById('result');
+        const contentSubmitForm = document.getElementById('content-submit-form');
+        const contentTextarea = document.getElementById('content-textarea');
 
-document.getElementById('cancelar-edicao').addEventListener('click', () => {
-    navigateTo('section-all-articles');
-});
+        const getBase64 = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+        
+        contentSubmitForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loading.style.display = 'block';
+            resultDiv.innerHTML = '';
+            
+            const user = auth.currentUser;
+            if (!user) {
+                alert("Você precisa estar logado para publicar.");
+                loading.style.display = 'none';
+                return;
+            }
 
-// --- Lógica do Perfil (existente) ---
-profileLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    navigateTo('profile-section');
-    carregarMinhasContribuicoes();
-    carregarPaginaPessoal();
-});
+            const title = document.getElementById('title').value;
+            const sector = document.getElementById('sector').value;
+            const content = contentTextarea.value;
+            const termsConsent = document.getElementById('terms-consent').checked;
+            const imageFile = document.getElementById('image-upload').files[0];
 
-// Placeholder para histórico do artigo
-function abrirHistoricoArtigo() {
-    navigateTo('section-article-history');
-    document.getElementById('history-list').innerHTML = '<p>Funcionalidade de Histórico em desenvolvimento ou com erro no código original.</p>';
-    document.getElementById('cancelar-historico').addEventListener('click', () => {
-        navigateTo('section-all-articles');
-    });
-}
+            try {
+                let imageUrlCode = null;
+                let imageDocId = null;
+
+                if (imageFile) {
+                    const imageBase64 = await getBase64(imageFile);
+                    const imageRef = await db.collection('imagenscode').add({
+                        base64_code: imageBase64,
+                        original_name: imageFile.name,
+                        upload_date: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    imageDocId = imageRef.id;
+                    imageUrlCode = `[IMAGEM_ID:${imageDocId}]`;
+
+                    resultDiv.innerHTML += `<p>Imagem salva com sucesso! ID: <strong>${imageDocId}</strong></p>`;
+                }
+
+                await db.collection('wazzimagiyggfemboyverse69').add({
+                    title: title,
+                    sector: sector,
+                    date: firebase.firestore.FieldValue.serverTimestamp(),
+                    content: content,
+                    author_uid: user.uid,
+                    agreed_terms: termsConsent,
+                    image_reference: imageUrlCode
+                });
+
+                resultDiv.innerHTML += `<p>Documento publicado com sucesso na coleção "wazzimagiyggfemboyverse69".</p>`;
+                contentSubmitForm.reset();
+            } catch (error) {
+                console.error("Erro ao publicar: ", error);
+                resultDiv.innerHTML = `<p style="color:red;">Ocorreu um erro ao publicar o conteúdo. Tente novamente.</p>`;
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+        
+        // --- Funções de Login e Logout (existentes, com pequenas modificações) ---
+        loginButton.addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(error => {
+                console.error("Erro no login:", error);
+                alert("Ocorreu um erro ao fazer login. Tente novamente.");
+            });
+        });
+
+        logoutButton.addEventListener('click', () => {
+            auth.signOut();
+            navigateTo('section-all-articles');
+        });
+
+        // --- Lógica do Painel (existente) ---
+        function carregarArtigos(filtroCategoria = 'todos') {
+            articleList.innerHTML = '<p>Carregando artigos...</p>';
+            let query = db.collection('wazzimagiyggfemboyverse69').orderBy('date', 'desc');
+
+            if (filtroCategoria !== 'todos') {
+                query = query.where('sector', '==', filtroCategoria);
+            }
+
+            query.get().then(snapshot => {
+                articleList.innerHTML = '';
+                if (snapshot.empty) {
+                    articleList.innerHTML = '<p>Nenhum artigo encontrado.</p>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const item = doc.data();
+                    const listItem = document.createElement('div');
+                    listItem.className = 'article-list-item';
+                    listItem.innerHTML = `<h4>${item.title}</h4><p>${item.content ? item.content.substring(0, 100) + '...' : ''}</p>`;
+                    listItem.addEventListener('click', () => {
+                        carregarDetalhesArtigo(doc.id, item);
+                    });
+                    articleList.appendChild(listItem);
+                });
+            }).catch(error => {
+                console.error("Erro ao carregar artigos:", error);
+                articleList.innerHTML = '<p>Erro ao carregar artigos.</p>';
+            });
+        }
+        
+        // Adiciona eventos de clique para os filtros da barra lateral
+        document.querySelectorAll('.nav-link-filter').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Assumindo que você não quer filtrar por idioma por enquanto, apenas por categoria
+                const filtro = e.target.dataset.filter;
+                carregarArtigos(filtro);
+            });
+        });
+
+       function carregarDetalhesArtigo(docId, item) {
+            selectedArticleDocId = docId;
+            selectedArticleData = item;
+            document.querySelectorAll('.article-list-item').forEach(el => el.classList.remove('selected'));
+            const clickedItem = document.querySelector(`[data-doc-id="${docId}"]`);
+            if (clickedItem) clickedItem.classList.add('selected');
+
+            // Preparar o conteúdo da imagem
+            let imageHtml = '';
+            if (item.image_reference && item.image_reference.includes('[IMAGEM_ID:')) {
+                const imageDocId = item.image_reference.split(':')[1].slice(0, -1);
+                db.collection('imagenscode').doc(imageDocId).get().then(imageDoc => {
+                    if (imageDoc.exists) {
+                        const imageData = imageDoc.data();
+                        imageHtml = `<img src="data:image/png;base64,${imageData.base64_code}" style="max-width:100%; height:auto;">`;
+                        renderDetails(); // Renderiza após obter a imagem
+                    } else {
+                        renderDetails(); // Renderiza sem a imagem se não for encontrada
+                    }
+                });
+            } else {
+                renderDetails(); // Renderiza sem a imagem se não houver referência
+            }
+
+            function renderDetails() {
+                articleDetails.innerHTML = `
+                    <h2>${item.title}</h2>
+                    <div class="info">
+                        <p><strong>Setor:</strong> ${item.sector}</p>
+                        <p><strong>UID do Documento:</strong> ${docId}</p>
+                        <p><strong>Autor:</strong> ${item.author_uid || 'N/A'}</p>
+                    </div>
+                    ${imageHtml}
+                    <div class="article-content">
+                        ${item.content || '<p>Sem descrição.</p>'}
+                    </div>
+                    <div class="article-actions">
+                        <button id="edit-article-button">Editar</button>
+                        <button id="view-history-button">Histórico</button>
+                    </div>
+                `;
+                document.getElementById('edit-article-button').addEventListener('click', () => {
+                    abrirFormularioEdicao();
+                });
+                document.getElementById('view-history-button').addEventListener('click', () => {
+                    abrirHistoricoArtigo();
+                });
+            }
+        }
+
+        // --- Lógica de Edição de Artigo (existente) ---
+        function abrirFormularioEdicao() {
+            navigateTo('section-edit-article');
+            document.getElementById('edicao-titulo').value = selectedArticleData.title;
+            document.getElementById('edicao-setor').value = selectedArticleData.sector;
+            document.getElementById('edicao-conteudo').value = selectedArticleData.content;
+        }
+
+        formEdicaoArtigo.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const novoTitulo = document.getElementById('edicao-titulo').value;
+            const novoSetor = document.getElementById('edicao-setor').value;
+            const novoConteudo = document.getElementById('edicao-conteudo').value;
+            
+            if (selectedArticleDocId) {
+                try {
+                    await db.collection('wazzimagiyggfemboyverse69').doc(selectedArticleDocId).update({
+                        title: novoTitulo,
+                        sector: novoSetor,
+                        content: novoConteudo,
+                        ultimaEdicao: firebase.firestore.FieldValue.serverTimestamp(),
+                        editor_uid: auth.currentUser.uid,
+                    });
+                    alert("Artigo atualizado com sucesso!");
+                    navigateTo('section-all-articles');
+                    carregarArtigos();
+                } catch (error) {
+                    console.error("Erro ao atualizar o artigo:", error);
+                    alert("Ocorreu um erro ao atualizar o artigo.");
+                }
+            }
+        });
+
+        document.getElementById('cancelar-edicao').addEventListener('click', () => {
+            navigateTo('section-all-articles');
+        });
+
+        // --- Lógica do Perfil (existente) ---
+        profileLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateTo('profile-section');
+            carregarMinhasContribuicoes();
+            carregarPaginaPessoal();
+        });
+
+        // Placeholder para histórico do artigo (já que o original estava com erro)
+        function abrirHistoricoArtigo() {
+            navigateTo('section-article-history');
+            document.getElementById('history-list').innerHTML = '<p>Funcionalidade de Histórico em desenvolvimento ou com erro no código original.</p>';
+            document.getElementById('cancelar-historico').addEventListener('click', () => {
+                navigateTo('section-all-articles');
+            });
+        }
+    </script>
+</body>
+</html>
