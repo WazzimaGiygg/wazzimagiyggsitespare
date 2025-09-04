@@ -100,23 +100,115 @@
 <script>
 // --- Configuração do Firebase ---
 const firebaseConfig = {
-apiKey: "AIzaSyB9GkSqTIZ0kbVsba_WOdQeVAETrF9qna0", // Use sua própria chave!
-authDomain: "wzzm-ce3fc.firebaseapp.com",
-projectId: "wzzm-ce3fc",
-storageBucket: "wzzm-ce3fc.appspot.com",
-messagingSenderId: "249427877153",
-appId: "1:249427877153:web:0e4297294794a5aadeb260",
-measurementId: "G-PLKNZNFCQ8"
+    apiKey: "AIzaSyB9GkSqTIZ0kbVsba_WOdQeVAETrF9qna0",
+    authDomain: "wzzm-ce3fc.firebaseapp.com",
+    projectId: "wzzm-ce3fc",
+    storageBucket: "wzzm-ce3fc.appspot.com",
+    messagingSenderId: "249427877153",
+    appId: "1:249427877153:web:0e4297294794a5aadeb260",
+    measurementId: "G-PLKNZNFCQ8"
 };
+
 // Inicialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const firestore = firebase.firestore();
-firebase.analytics();
 
-// Variáveis globais para estado do usuário
-let currentUser = null;
-let isCurrentUserBanned = false;
+// --- Elementos do DOM ---
+const articleList = document.getElementById('article-list');
+const articleDetails = document.getElementById('article-details');
+const backButton = document.getElementById('back-button');
+const detailsTitle = document.getElementById('details-title');
+const detailsDate = document.getElementById('details-date');
+const detailsContent = document.getElementById('details-content');
+const detailsAuthorUid = document.getElementById('details-author-uid');
+const detailsPostUid = document.getElementById('details-post-uid');
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Esconde a seção de detalhes no início
+    articleDetails.style.display = 'none';
+    
+    // Carrega a lista de artigos ao carregar a página
+    loadArticles();
+
+    // Adiciona o evento de clique ao botão de voltar
+    backButton.addEventListener('click', () => {
+        articleList.style.display = 'block';
+        articleDetails.style.display = 'none';
+    });
+});
+
+// --- Função para carregar as postagens ---
+async function loadArticles() {
+    articleList.innerHTML = '<p>Carregando artigos...</p>';
+    try {
+        const snapshot = await firestore.collection('wazzimagiyggfemboyverse69').orderBy('date', 'desc').get();
+        articleList.innerHTML = '';
+        
+        if (snapshot.empty) {
+            articleList.innerHTML = '<p>Nenhum artigo encontrado.</p>';
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const article = doc.data();
+            const articleElement = document.createElement('div');
+            articleElement.className = 'article-card';
+            articleElement.dataset.id = doc.id;
+            
+            const date = article.date ? article.date.toDate().toLocaleDateString('pt-BR') : 'Data não disponível';
+            
+            articleElement.innerHTML = `
+                <h2>${article.title}</h2>
+                <p>Publicado em: ${date}</p>
+            `;
+            
+            articleElement.addEventListener('click', () => viewArticleDetails(doc.id));
+            articleList.appendChild(articleElement);
+        });
+
+    } catch (error) {
+        console.error("Erro ao carregar artigos: ", error);
+        articleList.innerHTML = '<p>Ocorreu um erro ao carregar os artigos.</p>';
+    }
+}
+
+// --- Função para visualizar os detalhes de um artigo ---
+async function viewArticleDetails(articleId) {
+    articleDetails.style.display = 'block';
+    articleList.style.display = 'none';
+    
+    // Limpa e exibe mensagem de carregamento
+    detailsTitle.textContent = 'Carregando...';
+    detailsDate.textContent = '';
+    detailsContent.innerHTML = '<p>...</p>';
+    detailsAuthorUid.textContent = '...';
+    detailsPostUid.textContent = '...';
+
+    try {
+        const doc = await firestore.collection('wazzimagiyggfemboyverse69').doc(articleId).get();
+
+        if (!doc.exists) {
+            detailsTitle.textContent = 'Artigo não encontrado.';
+            detailsContent.innerHTML = '';
+            return;
+        }
+
+        const article = doc.data();
+        const date = article.date ? article.date.toDate().toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Data não disponível';
+        
+        detailsTitle.textContent = article.title;
+        detailsDate.textContent = `Publicado em: ${date}`;
+        detailsContent.innerHTML = article.content;
+        detailsAuthorUid.textContent = article.authorUid || 'Não disponível';
+        detailsPostUid.textContent = doc.id;
+
+    } catch (error) {
+        console.error("Erro ao carregar detalhes do artigo: ", error);
+        detailsTitle.textContent = 'Ocorreu um erro ao carregar os detalhes.';
+        detailsContent.innerHTML = '';
+    }
+}
 </script>
 </body>
 </html>
