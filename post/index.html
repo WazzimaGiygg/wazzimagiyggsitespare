@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post - Projeto WZZM</title>
+    <link rel="icon" href="favicon.png" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cor-fundo: #f0f2f5;
+            --cor-container: #ffffff;
+            --cor-texto-principal: #333333;
+            --cor-texto-secundario: #666666;
+            --cor-divisoria: #e0e0e0;
+            --sombra: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto-principal);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background-color: var(--cor-container);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: var(--sombra);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--cor-divisoria);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--cor-texto-principal);
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .uid-display {
+            font-size: 0.9em;
+            color: var(--cor-texto-secundario);
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-top: 2em;
+            margin-bottom: 1em;
+            color: #222;
+        }
+
+        .secao {
+            margin-bottom: 25px;
+        }
+
+        .secao p {
+            margin: 0;
+            padding: 0;
+        }
+
+        .fontes-container {
+            margin-top: 2em;
+        }
+
+        .fontes-container ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .fontes-container li {
+            margin-bottom: 5px;
+        }
+
+        .fontes-container a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        .fontes-container a:hover {
+            text-decoration: underline;
+        }
+
+        .print-buttons {
+            text-align: right;
+        }
+
+        .print-buttons button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .print-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .print-buttons {
+                text-align: left;
+                margin-top: 15px;
+            }
+        }
+
+        @media print {
+            body {
+                background-color: #fff;
+            }
+
+            .print-buttons, .container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .print-buttons {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="artigo-container">
+            <p style="text-align: center; color: #666;">Carregando postagem...</p>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB9GkSqTIZ0kbVsba_WOdQeVAETrF9qna0",
+            authDomain: "wzzm-ce3fc.firebaseapp.com",
+            projectId: "wzzm-ce3fc",
+            storageBucket: "wzzm-ce3fc.appspot.com",
+            messagingSenderId: "249427877153",
+            appId: "1:249427877153:web:0e4297294794a5aadeb260",
+            measurementId: "G-PLKNZNFCQ8"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const artigoContainer = document.getElementById('artigo-container');
+
+        async function buscarEExibirPost() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const uid = urlParams.get('uid');
+
+            if (!uid) {
+                artigoContainer.innerHTML = '<p style="text-align: center; color: #e74c3c;">UID da postagem não fornecido na URL.</p>';
+                return;
+            }
+
+            try {
+                // Alteração: Coleta 'posts' ao invés de 'materias'
+                const docRef = db.collection('posts').doc(uid);
+                const doc = await docRef.get();
+
+                if (doc.exists) {
+                    const post = doc.data();
+                    let infoHtml = '';
+
+                    // Adicione a data e autor à seção de informações
+                    if (post.data) infoHtml += `<p><strong>Data:</strong> ${post.data}</p>`;
+                    if (post.autor) infoHtml += `<p><strong>Autor:</strong> ${post.autor}</p>`;
+                    
+                    // Adicione o conteúdo do post
+                    let conteudoPost = post.conteudo ? `<p>${post.conteudo}</p>` : '';
+
+                    artigoContainer.innerHTML = `
+                        <div class="print-buttons">
+                            <button onclick="window.print()">Imprimir</button>
+                        </div>
+                        <div class="header-content">
+                            <h1>${post.titulo}</h1>
+                            <p class="uid-display">UID: ${doc.id}</p>
+                        </div>
+                        <div class="secao">
+                            <h2>Informações da Postagem</h2>
+                            ${infoHtml}
+                        </div>
+                        <div class="secao">
+                            <h2>Conteúdo</h2>
+                            ${conteudoPost}
+                        </div>
+                    `;
+                } else {
+                    artigoContainer.innerHTML = '<p style="text-align: center; color: #e74c3c;">Postagem não encontrada.</p>';
+                }
+            } catch (error) {
+                console.error("Erro ao buscar a postagem:", error);
+                artigoContainer.innerHTML = '<p style="text-align: center; color: #e74c3c;">Erro ao carregar a postagem: ' + error.message + '</p>';
+            }
+        }
+
+        window.onload = buscarEExibirPost;
+    </script>
+</body>
+</html>
