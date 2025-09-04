@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inserir Conteúdo - WazzimaGiygg</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">WazzimaGiygg - Femboy Universe</div>
+        <div class="user-menu">
+            <span id="user-display">Não logado</span>
+            <button id="login-button">Login com Google</button>
+            <button id="logout-button" style="display: none;">Sair</button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section id="content-form">
+            <h1>Inserir Novo Conteúdo</h1>
+            <p>Logado como: <strong id="logged-user-display"></strong></p>
+            <hr>
+            <form id="content-submit-form" style="display: none;">
+                <label for="title">Título:</label>
+                <input type="text" id="title" required>
+
+                <label for="content-textarea">Conteúdo (insira o código HTML aqui):</label>
+                <textarea id="content-textarea" required></textarea>
+
+                <button type="submit">Publicar Conteúdo</button>
+            </form>
+            <p id="loading" style="display: none;">Processando...</p>
+            <div id="result"></div>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
