@@ -17,6 +17,12 @@
     },
 
     {
+        "label": "Adicionar nova postagem (Admin)",
+        "href": "admin/",
+        "requiresAuth": true
+    },
+
+    {
         "label": "Meus trabalhos e produtos",
         "href": "./meustrabalhos",
         "requiresAuth": true
