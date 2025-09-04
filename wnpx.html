@@ -3,161 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bem vindo à pagina de WazzimaGiygg</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <title>WazzimaGiygg - Artigos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            color: #1a73e8;
+        }
+        #article-list, #article-details {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .article-card {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .article-card:last-child {
+            border-bottom: none;
+        }
+        .article-card:hover {
+            background-color: #f9f9f9;
+        }
+        .article-card h2 {
+            margin: 0 0 5px 0;
+            color: #1a73e8;
+            font-size: 1.2em;
+        }
+        .article-card p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #777;
+        }
+        #article-details {
+            display: none;
+            margin-top: 20px;
+        }
+        .article-content {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-top: 10px;
+        }
+        .back-button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-
-    <div id="auth-status">
-        <p>Faça login com sua conta Google para continuar.</p>
-        <button id="login-button">Login com Google</button>
-    </div>
-
-    <div id="main-dashboard" style="display: none;">
-        <header>
-            <div class="logo">WazzimaGiygg - Femboy Universe</div>
-            <div class="user-menu">
-                <a href="#" id="profile-link">Meu Perfil</a>
-                <a href="#" id="logout-button">Sair</a>
-            </div>
-        </header>
-
-        <div class="dashboard-container">
-            <aside class="sidebar">
-                <div class="sidebar-section">
-                    <h3>Navegação</h3>
-                    <ul>
-                        <li><a href="#" class="nav-link" data-section="all-articles">Ver Todos</a></li>
-                        <li><a href="#" class="nav-link" data-section="new-article">Novo Artigo</a></li>
-                    </ul>
-                </div>
-                <div class="sidebar-section">
-                    <h3>Categorias</h3>
-                    <ul id="category-filter">
-                        <li><a href="#" class="nav-link-filter" data-filter="Noticias">Noticias</a></li>
-                        <li><a href="#" class="nav-link-filter" data-filter="Produtos">Produtos</a></li>
-                        <li><a href="#" class="nav-link-filter" data-filter="Informações">Informações</a></li>
-                    </ul>
-                </div>
-                <div class="sidebar-section">
-                    <h3>Idioma</h3>
-                    <ul id="language-filter">
-                        <li><a href="#" class="nav-link-filter" data-filter="pt-br">Português</a></li>
-                        <li><a href="#" class="nav-link-filter" data-filter="en">Inglês</a></li>
-                        <li><a href="#" class="nav-link-filter" data-filter="es">Espanhol</a></li>
-                        <li><a href="#" class="nav-link-filter" data-filter="de">Alemão</a></li>
-                    </ul>
-                </div>
-            </aside>
-
-            <main class="main-content">
-                <section id="section-all-articles" class="content-section">
-                    <div class="content-area">
-                        <div class="article-list" id="article-list">
-                            <p>Selecione um artigo para ver os detalhes.</p>
-                        </div>
-                        <div class="article-details" id="article-details">
-                            <p>Selecione um artigo para ver os detalhes.</p>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="section-new-article" class="content-section" style="display: none;">
-                    <div id="content-form">
-                        <h1>Inserir Novo Conteúdo</h1>
-                        <p>Logado como: <strong id="user-display"></strong></p>
-                        <hr>
-                        <form id="content-submit-form">
-                            <label for="title">Título:</label>
-                            <input type="text" id="title" required>
-
-                            <label for="sector">Setor:</label>
-                            <select id="sector" required>
-                                <option value="">Selecione um setor</option>
-                                <option value="Noticias">Noticias</option>
-                                <option value="Produtos">Produtos</option>
-                                <option value="Informações">Informações</option>
-                            </select>
-
-                            <label for="content-textarea">Conteúdo (insira o código HTML aqui):</label>
-                            <textarea id="content-textarea" required></textarea>
-
-                            <label for="image-upload">Upload de Imagem:</label>
-                            <input type="file" id="image-upload" accept="image/*">
-
-                            <div id="consent">
-                                <input type="checkbox" id="terms-consent" required>
-                                <label for="terms-consent">Concordo com os termos de publicação.</label>
-                            </div>
-
-                            <button type="submit">Publicar Conteúdo</button>
-                        </form>
-                        <p id="loading">Processando...</p>
-                        <div id="result"></div>
-                    </div>
-                </section>
-
-                <section id="section-edit-article" class="content-section" style="display: none;">
-                    <div class="edit-form-container" id="edit-form-container">
-                        <h2>Editar Artigo</h2>
-                        <form id="form-edicao-artigo">
-                            <label for="edicao-titulo">Título:</label>
-                            <input type="text" id="edicao-titulo" required>
-
-                            <label for="edicao-setor">Setor:</label>
-                            <select id="edicao-setor" required>
-                                <option value="Noticias">Noticias</option>
-                                <option value="Produtos">Produtos</option>
-                                <option value="Informações">Informações</option>
-                            </select>
-
-                            <label for="edicao-conteudo">Conteúdo:</label>
-                            <textarea id="edicao-conteudo" rows="20" required></textarea>
-
-                            <button type="submit">Salvar Edição</button>
-                            <button type="button" id="cancelar-edicao">Cancelar</button>
-                        </form>
-                    </div>
-                </section>
-                
-                <section id="section-article-history" class="content-section" style="display: none;">
-                    <h2>Histórico do Artigo</h2>
-                    <div id="history-list"></div>
-                    <button id="cancelar-historico">Voltar</button>
-                </section>
-
-                <section id="profile-section" class="content-section" style="display: none;">
-                    <div id="profile-content">
-                        <h2>Meu Perfil</h2>
-                        <div class="profile-tabs">
-                            <a href="#" class="tab-link active" data-tab="contributions">Minhas Contribuições</a>
-                            <a href="#" class="tab-link" data-tab="personal-page">Página Pessoal</a>
-                            <a href="#" class="tab-link" data-tab="discussion">Discussão</a>
-                        </div>
-                        <div id="tab-contributions" class="tab-content active">
-                            <h3>Minhas Contribuições Recentes</h3>
-                            <ul id="contributions-list"></ul>
-                        </div>
-                        <div id="tab-personal-page" class="tab-content">
-                            <h3>Minha Página Pessoal</h3>
-                            <textarea id="personal-page-content" rows="10"></textarea>
-                            <button id="save-personal-page">Salvar Página Pessoal</button>
-                        </div>
-                        <div id="tab-discussion" class="tab-content">
-                            <h3>Discussões</h3>
-                            <p>Em breve...</p>
-                        </div>
-                    </div>
-                </section>
-            </main>
+    <div class="container">
+        <h1>WazzimaGiygg - Artigos</h1>
+        <div id="article-list">
+            <p>Carregando artigos...</p>
+        </div>
+        
+        <div id="article-details">
+            <button id="back-button" class="back-button">Voltar</button>
+            <h2 id="details-title"></h2>
+            <p id="details-date"></p>
+            <div id="details-content" class="article-content"></div>
+            <p><small>UID do autor: <span id="details-author-uid"></span></small></p>
+            <p><small>UID da postagem: <span id="details-post-uid"></span></small></p>
         </div>
     </div>
     
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
