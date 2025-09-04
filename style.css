@@ -1,269 +1,90 @@
-:root {
-    --primary-color: #336699;
-    --secondary-color: #f1f1f1;
-    --background-color: #e9e9e9;
-    --border-color: #ccc;
-    --text-color: #333;
-    --link-color: #007bff;
-    --link-hover-color: #0056b3;
-    --wikipedia-blue: #0645ad;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    line-height: 1.6;
-}
-
-.dashboard-container {
-    display: flex;
-    min-height: 100vh;
-}
-
-header {
-    background-color: white;
-    padding: 1rem 2rem;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 1000;
-}
-
-header .logo {
-    font-weight: bold;
-    font-size: 1.5rem;
-    color: var(--wikipedia-blue);
-}
-
-header .user-menu a {
-    margin-left: 1rem;
-    text-decoration: none;
-    color: var(--wikipedia-blue);
-}
-
-.sidebar {
-    width: 250px;
-    background-color: white;
-    padding-top: 5rem;
-    border-right: 1px solid var(--border-color);
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    overflow-y: auto;
-}
-
-.sidebar-section {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.sidebar-section h3 {
-    margin-top: 0;
-    font-size: 1.1rem;
-}
-
-.sidebar-section ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.sidebar-section li a {
-    display: block;
-    padding: 0.5rem 0;
-    text-decoration: none;
-    color: var(--text-color);
-    transition: color 0.2s;
-}
-
-.sidebar-section li a:hover, .sidebar-section li a.active {
-    color: var(--wikipedia-blue);
-    font-weight: bold;
-}
-
-.main-content {
-    flex-grow: 1;
-    padding: 5rem 1rem 1rem 260px;
-}
-
-.content-area {
-    display: flex;
+/* Estilo para cada "cartão" de artigo na lista */
+.article-card {
     background-color: white;
     border: 1px solid var(--border-color);
-    min-height: 80vh;
-}
-
-.article-list {
-    width: 40%;
-    border-right: 1px solid var(--border-color);
-    overflow-y: auto;
-}
-
-.article-list-item {
+    border-radius: 8px;
+    margin-bottom: 1rem;
     padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: background-color 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease-in-out;
 }
 
-.article-list-item:hover {
-    background-color: var(--secondary-color);
+.article-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.article-list-item.selected {
-    background-color: var(--secondary-color);
-    border-left: 3px solid var(--wikipedia-blue);
+.article-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: var(--wikipedia-blue); /* Ou sua cor de título preferida */
 }
 
-.article-list-item h4 {
-    margin: 0 0 0.5rem;
-}
-
-.article-details {
-    width: 60%;
-    padding: 1rem;
-    overflow-y: auto;
-}
-
-.article-details .info p {
-    margin: 0 0 0.5rem;
-    font-size: 0.9rem;
+.article-card p {
+    font-size: 0.9em;
     color: #666;
-}
-
-.article-content {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
-}
-
-.edit-form-container {
-    padding: 1rem;
-}
-
-.edit-form-container h2 {
-    margin-top: 0;
-}
-
-.edit-form-container label {
-    display: block;
-    margin-top: 1rem;
-}
-
-.edit-form-container input, .edit-form-container textarea, .edit-form-container select {
-    width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-}
-
-.edit-form-container button {
-    margin-top: 1rem;
-    padding: 10px 15px;
-    background-color: var(--wikipedia-blue);
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-#auth-status {
-    padding: 2rem;
-    text-align: center;
-}
-
-#profile-content {
-    padding: 1rem;
-}
-
-#profile-content h2 {
-    margin-top: 0;
-}
-
-#profile-content .profile-tabs {
-    border-bottom: 1px solid var(--border-color);
     margin-bottom: 1rem;
 }
 
-#profile-content .profile-tabs a {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    text-decoration: none;
-    color: var(--text-color);
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-}
-
-#profile-content .profile-tabs a.active {
-    border: 1px solid var(--border-color);
-    border-bottom: none;
-    background-color: var(--secondary-color);
-    font-weight: bold;
-}
-
-#profile-content .tab-content {
-    display: none;
-}
-
-#profile-content .tab-content.active {
-    display: block;
-}
-
-#content-form {
-    max-width: 800px;
-    margin: auto;
-    padding: 2em;
-    background-color: white;
-    border: 1px solid var(--border-color);
-}
-
-#content-form label {
-    display: block;
-    margin-top: 1em;
-    font-weight: bold;
-}
-
-#content-form input[type="text"], #content-form select, #content-form textarea {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    box-sizing: border-box;
-}
-
-#content-form #content-textarea {
-    height: 300px;
-}
-
-#content-form #consent {
-    margin-top: 1em;
-}
-
-#content-form button {
-    padding: 10px 15px;
-    margin-top: 1em;
-    cursor: pointer;
+/* Estilo para os botões "Ver Conteúdo" e "Voltar à Lista" */
+.view-button, #back-to-list-button {
     background-color: var(--wikipedia-blue);
     color: white;
     border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
 }
 
-#loading {
-    display: none;
-    margin-top: 1em;
-    color: blue;
-    text-align: center;
+.view-button:hover, #back-to-list-button:hover {
+    background-color: #04398e; /* Um tom mais escuro do azul Wikipedia */
 }
 
-#result {
-    margin-top: 1em;
-    padding: 10px;
-    background-color: #e9e9e9;
-    border: 1px solid #ccc;
-    text-align: center;
+/* Estilo para o conteúdo do artigo (se ele tiver HTML) */
+.article-content {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    /* Garante que imagens e outros elementos dentro do HTML inserido se ajustem */
+    max-width: 100%; 
+    overflow-x: auto; /* Para lidar com conteúdo muito largo */
+}
+
+.article-content img {
+    max-width: 100%;
+    height: auto;
+    display: block; /* Para evitar espaçamento extra abaixo da imagem */
+    margin: 1em 0; /* Espaço acima e abaixo das imagens */
+    border-radius: 5px;
+}
+
+/* Ajustes para o layout flexbox dos detalhes e lista */
+.content-area {
+    display: flex;
+    flex-direction: column; /* Em telas menores, os itens ficam um abaixo do outro */
+    background-color: transparent; /* Remove o fundo branco para permitir os article-cards */
+    border: none; /* Remove a borda para permitir os article-cards */
+    min-height: auto; /* Ajusta a altura mínima */
+}
+
+/* Quando em tela maior, coloca lista e detalhes lado a lado */
+@media (min-width: 768px) {
+    .content-area {
+        flex-direction: row;
+        background-color: white; /* Volta o fundo branco */
+        border: 1px solid var(--border-color); /* Volta a borda */
+    }
+    .article-list {
+        width: 40%;
+        border-right: 1px solid var(--border-color);
+        overflow-y: auto;
+        padding: 1rem; /* Adiciona padding para a lista de artigos */
+    }
+    .article-details {
+        width: 60%;
+        padding: 1rem;
+        overflow-y: auto;
+    }
 }
