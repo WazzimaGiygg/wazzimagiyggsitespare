@@ -657,7 +657,7 @@ await loadAndApplyUserAppsCSS(user.uid);
 
 // Carregar a página inicial na primeira janela flutuante se não houver nenhuma
 if (!document.querySelector('.floating-window')) {
-createFloatingWindow('recepcao.html', 'Recepção', false);
+createFloatingWindow('https://wazzimagiygg.com/post/?uid=JjRXTFeZKc9fxGkk9Apc', 'Recepção', false);
 }
 }
 } else { // Usuário deslogado
@@ -675,7 +675,7 @@ if (contentFrame) contentFrame.style.display = 'none';
 if (accessDeniedMessage) accessDeniedMessage.style.display = 'none';
 
 if (!document.querySelector('.floating-window')) {
-createFloatingWindow('recepcao.html', 'Recepção', false);
+createFloatingWindow('https://wazzimagiygg.com/post/?uid=JjRXTFeZKc9fxGkk9Apc', 'Recepção', false);
 }
 
 if (userProfilePic) {
@@ -852,7 +852,7 @@ function createFloatingWindow(src, customTitle = null, requiresAuth = false) {
 const container = document.getElementById('window-container');
 
 // Verifica as regras de acesso antes de criar a janela
-if (isCurrentUserBanned && src !== 'recepcao.html' && src !== 'POLÍTICAS GERAIS DO WIKI ZONE ZERO MOD.pdf') {
+if (isCurrentUserBanned && src !== 'https://wazzimagiygg.com/post/?uid=JjRXTFeZKc9fxGkk9Apc' && src !== 'POLÍTICAS GERAIS DO WIKI ZONE ZERO MOD.pdf') {
 document.getElementById('banned-message').style.display = 'block';
 return;
 }
