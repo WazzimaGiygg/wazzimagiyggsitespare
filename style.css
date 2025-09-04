@@ -1,0 +1,269 @@
+:root {
+    --primary-color: #336699;
+    --secondary-color: #f1f1f1;
+    --background-color: #e9e9e9;
+    --border-color: #ccc;
+    --text-color: #333;
+    --link-color: #007bff;
+    --link-hover-color: #0056b3;
+    --wikipedia-blue: #0645ad;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+header {
+    background-color: white;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+header .logo {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: var(--wikipedia-blue);
+}
+
+header .user-menu a {
+    margin-left: 1rem;
+    text-decoration: none;
+    color: var(--wikipedia-blue);
+}
+
+.sidebar {
+    width: 250px;
+    background-color: white;
+    padding-top: 5rem;
+    border-right: 1px solid var(--border-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.sidebar-section {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-section h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+}
+
+.sidebar-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-section li a {
+    display: block;
+    padding: 0.5rem 0;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: color 0.2s;
+}
+
+.sidebar-section li a:hover, .sidebar-section li a.active {
+    color: var(--wikipedia-blue);
+    font-weight: bold;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 5rem 1rem 1rem 260px;
+}
+
+.content-area {
+    display: flex;
+    background-color: white;
+    border: 1px solid var(--border-color);
+    min-height: 80vh;
+}
+
+.article-list {
+    width: 40%;
+    border-right: 1px solid var(--border-color);
+    overflow-y: auto;
+}
+
+.article-list-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.article-list-item:hover {
+    background-color: var(--secondary-color);
+}
+
+.article-list-item.selected {
+    background-color: var(--secondary-color);
+    border-left: 3px solid var(--wikipedia-blue);
+}
+
+.article-list-item h4 {
+    margin: 0 0 0.5rem;
+}
+
+.article-details {
+    width: 60%;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.article-details .info p {
+    margin: 0 0 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.article-content {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.edit-form-container {
+    padding: 1rem;
+}
+
+.edit-form-container h2 {
+    margin-top: 0;
+}
+
+.edit-form-container label {
+    display: block;
+    margin-top: 1rem;
+}
+
+.edit-form-container input, .edit-form-container textarea, .edit-form-container select {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.edit-form-container button {
+    margin-top: 1rem;
+    padding: 10px 15px;
+    background-color: var(--wikipedia-blue);
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#auth-status {
+    padding: 2rem;
+    text-align: center;
+}
+
+#profile-content {
+    padding: 1rem;
+}
+
+#profile-content h2 {
+    margin-top: 0;
+}
+
+#profile-content .profile-tabs {
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+}
+
+#profile-content .profile-tabs a {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    color: var(--text-color);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+#profile-content .profile-tabs a.active {
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    background-color: var(--secondary-color);
+    font-weight: bold;
+}
+
+#profile-content .tab-content {
+    display: none;
+}
+
+#profile-content .tab-content.active {
+    display: block;
+}
+
+#content-form {
+    max-width: 800px;
+    margin: auto;
+    padding: 2em;
+    background-color: white;
+    border: 1px solid var(--border-color);
+}
+
+#content-form label {
+    display: block;
+    margin-top: 1em;
+    font-weight: bold;
+}
+
+#content-form input[type="text"], #content-form select, #content-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+#content-form #content-textarea {
+    height: 300px;
+}
+
+#content-form #consent {
+    margin-top: 1em;
+}
+
+#content-form button {
+    padding: 10px 15px;
+    margin-top: 1em;
+    cursor: pointer;
+    background-color: var(--wikipedia-blue);
+    color: white;
+    border: none;
+}
+
+#loading {
+    display: none;
+    margin-top: 1em;
+    color: blue;
+    text-align: center;
+}
+
+#result {
+    margin-top: 1em;
+    padding: 10px;
+    background-color: #e9e9e9;
+    border: 1px solid #ccc;
+    text-align: center;
+}
