@@ -1,4 +1,5 @@
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
+
     // --- Configuração do Firebase ---
     const firebaseConfig = {
         apiKey: "AIzaSyB9GkSqTIZ0kbVsba_WOdQvAET-rF9qna0",
@@ -9,6 +10,8 @@
         appId: "1:249427877153:web:0e4297294794a5aadeb260",
         measurementId: "G-PLKNZNFCQ8"
     };
+
+    // Acessa o objeto global 'firebase'
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
@@ -153,19 +156,11 @@
             articleDetails.innerHTML = '<p>Ocorreu um erro ao carregar os detalhes.</p>';
         }
     }
-
-    // --- Adicione a lógica do formulário de inserção aqui, se necessário ---
-    // (O código para "Novo Artigo" e outras seções precisa ser reintroduzido)
-    // Exemplo:
+    
     const contentSubmitForm = document.getElementById('content-submit-form');
     if (contentSubmitForm) {
         contentSubmitForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            // Lógica para enviar o novo artigo ao Firebase...
         });
     }
-
-    // --- Inicialização: carrega a lista de artigos ao abrir a página (se logado) ---
-    // A função loadArticles() já é chamada no onAuthStateChanged, então está pronto.
-
-})();
+});
